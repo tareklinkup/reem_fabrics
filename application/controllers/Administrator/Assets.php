@@ -87,6 +87,15 @@ class Assets extends CI_Controller {
     {
         $data = json_decode($this->input->raw_input_stream);
 
+        $branchId = $this->session->userdata('BRANCHid');
+
+        if(isset($data->branchId) && $data->branchId != '')
+        {
+                $branchId = $data->branchId;
+            }else {
+                $branchId = $this->session->userdata("BRANCHid");
+            }
+
         $clauses = "";
         if(isset($data->dateFrom) && $data->dateFrom != '' 
         && isset($data->dateTo) && $data->dateTo != ''){
@@ -100,7 +109,7 @@ class Assets extends CI_Controller {
         $assets = $this->db->query("
             select ass.* from tbl_assets ass
                 where ass.status = 'a'
-                and ass.branchid= " . $this->session->userdata('BRANCHid') . "
+                and ass.branchid= '$branchId' 
                 $clauses
         ")->result();
 

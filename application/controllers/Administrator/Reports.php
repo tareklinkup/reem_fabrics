@@ -633,34 +633,36 @@ class Reports extends CI_Controller {
 		{
 			$category = $this->Billing_model->select_category_by_branch($this->brunch);
 			?>
-			<select id="category"  data-placeholder="Choose a Category ....." class="chosen-select" style="width:200px">
-				<option value=""></option>		
-			<?php
+<select id="category" data-placeholder="Choose a Category ....." class="chosen-select" style="width:200px">
+    <option value=""></option>
+    <?php
 			foreach($category as $vcategory)
 			{
 			?>
-				<option value="<?php echo $vcategory->ProductCategory_SlNo; ?>"><?php echo $vcategory->ProductCategory_Name; ?></option>
-			<?php
+    <option value="<?php echo $vcategory->ProductCategory_SlNo; ?>"><?php echo $vcategory->ProductCategory_Name; ?>
+    </option>
+    <?php
 			}
 			?>
-			</select>
-			<?php
+</select>
+<?php
 		}else{
 			$products = $this->Product_model->products_by_brunch();
 			//echo "<pre>";print_r($product);exit;
 			?>
-			<select id="product"  data-placeholder="Choose a Product ....." class="chosen-select" style="width:200px">
-				<option value=""></option>		
-			<?php
+<select id="product" data-placeholder="Choose a Product ....." class="chosen-select" style="width:200px">
+    <option value=""></option>
+    <?php
 			foreach($products as $product)
 			{
 			?>
-				<option value="<?php echo $product->Product_SlNo; ?>"><?php echo $product->Product_Name; ?>-<?php echo $product->Product_Code; ?></option>
-			<?php
+    <option value="<?php echo $product->Product_SlNo; ?>">
+        <?php echo $product->Product_Name; ?>-<?php echo $product->Product_Code; ?></option>
+    <?php
 			}
 			?>
-			</select>
-			<?php
+</select>
+<?php
 		}
 	}
 	
@@ -721,7 +723,15 @@ class Reports extends CI_Controller {
         $res = [ 'success'   => false, 'message'  => 'Invalid' ];
 
         try {
-            $branchId = $this->brunch;
+
+            if(isset($data->branchId) && $data->branchId != '')
+                {
+                $branchId = $data->branchId;
+                }else {
+                    $branchId = $this->brunch;
+                }
+
+
             $data       = json_decode($this->input->raw_input_stream);
             $date       = null;
 
@@ -833,7 +843,7 @@ class Reports extends CI_Controller {
             $supplier_prev_due = $this->db->query("
                 SELECT ifnull(sum(previous_due), 0) as amount
                 from tbl_supplier
-                where Supplier_brinchid = '$this->brunch'
+                where Supplier_brinchid = '$branchId'
             ")->row()->amount;
 
             //supplier due
@@ -849,7 +859,7 @@ class Reports extends CI_Controller {
                 where sm.SaleMaster_branchid = ? 
                 and sm.Status = 'a'
                 " . ($date == null ? "" : " and sm.SaleMaster_SaleDate < '$date'") . "
-            ", $this->session->userdata('BRANCHid'))->result();
+            ", $branchId)->result();
 
             foreach($sales as $sale){
                 $sale->saleDetails = $this->db->query("
@@ -886,7 +896,7 @@ class Reports extends CI_Controller {
                 (
                     select ifnull(sum(ct.In_Amount), 0)
                     from tbl_cashtransaction ct
-                    where ct.Tr_branchid = '" . $this->session->userdata('BRANCHid') . "'
+                    where ct.Tr_branchid = '$branchId'
                     and ct.status = 'a'
                     " . ($date == null ? "" : " and ct.Tr_date < '$date'") . "
                 ) as income,
@@ -894,7 +904,7 @@ class Reports extends CI_Controller {
                 (
                     select ifnull(sum(ct.Out_Amount), 0)
                     from tbl_cashtransaction ct
-                    where ct.Tr_branchid = '" . $this->session->userdata('BRANCHid') . "'
+                    where ct.Tr_branchid = '$branchId'
                     and ct.status = 'a'
                     " . ($date == null ? "" : " and ct.Tr_date < '$date'") . "
                 ) as expense,
@@ -902,7 +912,7 @@ class Reports extends CI_Controller {
                 (
                     select ifnull(sum(it.amount), 0)
                     from tbl_investment_transactions it
-                    where it.branch_id = '" . $this->session->userdata('BRANCHid') . "'
+                    where it.branch_id = '$branchId'
                     and it.transaction_type = 'Profit'
                     and it.status = 1
                     " . ($date == null ? "" : " and it.transaction_date < '$date'") . "
@@ -911,7 +921,7 @@ class Reports extends CI_Controller {
                 (
                     select ifnull(sum(lt.amount), 0)
                     from tbl_loan_transactions lt
-                    where lt.branch_id = '" . $this->session->userdata('BRANCHid') . "'
+                    where lt.branch_id = '$branchId'
                     and lt.transaction_type = 'Interest'
                     and lt.status = 1
                     " . ($date == null ? "" : " and lt.transaction_date < '$date'") . "
@@ -920,7 +930,7 @@ class Reports extends CI_Controller {
                 (
                     select ifnull(sum(a.valuation - a.as_amount), 0)
                     from tbl_assets a
-                    where a.branchid = '" . $this->session->userdata('BRANCHid') . "'
+                    where a.branchid = '$branchId'
                     and a.buy_or_sale = 'sale'
                     and a.status = 'a'
                     " . ($date == null ? "" : " and a.as_date < '$date'") . "
@@ -929,7 +939,7 @@ class Reports extends CI_Controller {
                 (
                     select ifnull(sum(ep.total_payment_amount), 0)
                     from tbl_employee_payment ep
-                    where ep.branch_id = '" . $this->session->userdata('BRANCHid') . "'
+                    where ep.branch_id = '$branchId'
                     and ep.status = 'a'
                     " . ($date == null ? "" : " and ep.payment_date < '$date'") . "
                 ) as employee_payment,
@@ -938,7 +948,7 @@ class Reports extends CI_Controller {
                     select ifnull(sum(dd.damage_amount), 0) 
                     from tbl_damagedetails dd
                     join tbl_damage d on d.Damage_SlNo = dd.Damage_SlNo
-                    where d.Damage_brunchid = '" . $this->session->userdata('BRANCHid') . "'
+                    where d.Damage_brunchid = '$branchId'
                     and dd.status = 'a'
                     " . ($date == null ? "" : " and d.Damage_Date  < '$date'") . "
                 ) as damaged_amount,
@@ -950,7 +960,7 @@ class Reports extends CI_Controller {
                     join tbl_salesmaster sm on sm.SaleMaster_InvoiceNo = r.SaleMaster_InvoiceNo
                     join tbl_saledetails sd on sd.Product_IDNo = rd.SaleReturnDetailsProduct_SlNo and sd.SaleMaster_IDNo = sm.SaleMaster_SlNo
                     where r.Status = 'a'
-                    and r.SaleReturn_brunchId = '" . $this->session->userdata('BRANCHid') . "'
+                    and r.SaleReturn_brunchId = '$branchId'
                     " . ($date == null ? "" : " and r.SaleReturn_ReturnDate  < '$date'") . "
                 ) as returned_amount
             ")->row();

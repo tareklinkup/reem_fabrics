@@ -204,6 +204,13 @@ class Model_Table extends CI_Model{
                 and ct.Tr_branchid= " . $this->session->userdata('BRANCHid') . "
                 " . ($date == null ? "" : " and ct.Tr_date < '$date'") . "
             ) as received_cash,
+
+            (
+                select ifnull(sum(ctt.transfer_amount), 0) from tbl_cashtransfer ctt
+                where ctt.transfer_to = " . $this->session->userdata('BRANCHid') . "
+                " . ($date == null ? "" : " and ctt.transfer_date < '$date'") . "
+            ) as fund_received,
+
             (
                 select ifnull(sum(bt.amount), 0) from tbl_bank_transactions bt
                 where bt.transaction_type = 'withdraw'
@@ -269,6 +276,13 @@ class Model_Table extends CI_Model{
                 and ct.Tr_branchid= " . $this->session->userdata('BRANCHid') . "
                 " . ($date == null ? "" : " and ct.Tr_date < '$date'") . "
             ) as paid_cash,
+
+            (
+                select ifnull(sum(ctt.transfer_amount), 0) from tbl_cashtransfer ctt
+                where ctt.transfer_from = " . $this->session->userdata('BRANCHid') . "
+                " . ($date == null ? "" : " and ctt.transfer_date < '$date'") . "
+            ) as fund_transfer,
+
             (
                 select ifnull(sum(bt.amount), 0) from tbl_bank_transactions bt
                 where bt.transaction_type = 'deposit'
@@ -276,6 +290,7 @@ class Model_Table extends CI_Model{
                 and bt.branch_id= " . $this->session->userdata('BRANCHid') . "
                 " . ($date == null ? "" : " and bt.transaction_date < '$date'") . "
             ) as bank_deposit,
+            
             (
                 select ifnull(sum(ep.total_payment_amount), 0) from tbl_employee_payment ep
                 where ep.branch_id = " . $this->session->userdata('BRANCHid') . "
@@ -305,10 +320,10 @@ class Model_Table extends CI_Model{
             ) as buy_asset,
             /* total */
             (
-                select received_sales + received_customer + received_supplier + received_cash + bank_withdraw + loan_received + loan_initial_balance + invest_received + sale_asset
+                select received_sales + received_customer + received_supplier + received_cash + fund_received + bank_withdraw + loan_received + loan_initial_balance + invest_received + sale_asset
             ) as total_in,
             (
-                select paid_purchase + paid_customer + paid_supplier + paid_cash + bank_deposit + employee_payment + loan_payment + invest_payment + buy_asset
+                select paid_purchase + paid_customer + paid_supplier + paid_cash + fund_transfer + bank_deposit + employee_payment + loan_payment + invest_payment + buy_asset
             ) as total_out,
             (
                 select total_in - total_out
@@ -627,6 +642,7 @@ class Model_Table extends CI_Model{
     }
 
     public function customerDue($clauses = "" , $date = null) {
+        
         $branchId = $this->session->userdata('BRANCHid');
         $dueResult = $this->db->query("
             select

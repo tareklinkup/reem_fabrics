@@ -213,6 +213,14 @@ class Account extends CI_Controller {
     public function getCashTransactions(){
         $data = json_decode($this->input->raw_input_stream);
 
+        if(isset($data->branchId) && $data->branchId != '')
+        {
+            $branchId = $data->branchId;
+            }else {
+            $branchId = $this->session->userdata('BRANCHid');
+        }
+
+
         $dateClause = "";
         if(isset($data->dateFrom) && $data->dateFrom != '' && isset($data->dateTo) && $data->dateTo != ''){
             $dateClause = " and ct.Tr_date between '$data->dateFrom' and '$data->dateTo'";
@@ -241,7 +249,7 @@ class Account extends CI_Controller {
             and ct.Tr_branchid = ?
             $dateClause $transactionTypeClause $accountClause
             order by ct.Tr_SlNo desc
-        ", $this->session->userdata('BRANCHid'))->result();
+        ", $branchId)->result();
 
         echo json_encode($transactions);
     }
@@ -1021,7 +1029,16 @@ class Account extends CI_Controller {
     }
 
     public function getBankTransactions(){
+
         $data = json_decode($this->input->raw_input_stream);
+
+      if(isset($data->branchId) && $data->branchId != '')
+      {
+              $branchId = $data->branchId;
+          }else {
+            $branchId =  $this->session->userdata('BRANCHid');
+          }
+
 
         $accountClause = "";
         if(isset($data->accountId) && $data->accountId != null){
@@ -1055,7 +1072,7 @@ class Account extends CI_Controller {
             and bt.branch_id = ?
             $accountClause $dateClause $typeClause
             order by bt.transaction_id desc
-        ", $this->session->userdata('BRANCHid'))->result();
+        ", $branchId)->result();
 
         echo json_encode($transactions);
     }

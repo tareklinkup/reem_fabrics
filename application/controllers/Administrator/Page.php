@@ -884,13 +884,13 @@ class Page extends CI_Controller {
      public function select_brand_by_category($id){
         $brand = $this->Billing_model->select_brand_by_category($id);
 		?>
-		  <option value="">Select Brand</option>
-		<?php
+<option value="">Select Brand</option>
+<?php
 		foreach($brand as $vbrand)
 		{
 		?>
-			<option value="<?php echo $vbrand->brand_SiNo; ?>"><?php echo $vbrand->brand_name; ?></option>
-		<?php
+<option value="<?php echo $vbrand->brand_SiNo; ?>"><?php echo $vbrand->brand_name; ?></option>
+<?php
 		}
     }
 	
@@ -899,45 +899,47 @@ class Page extends CI_Controller {
 		 {
 				$category = $this->Billing_model->select_category($this->session->userdata('BRANCHid'));
 				?>
-				<select name="pCategory" id="pCategory" style="" class="chosen-select form-control"" required>
-					<option value="All">All</option>
-				<?php
+<select name="pCategory" id="pCategory" style="" class="chosen-select form-control"" required>
+					<option value=" All">All</option>
+    <?php
 				foreach($category as $vcategory)
 				{
 				?>
-					<option value="<?php echo $vcategory->ProductCategory_SlNo; ?>"><?php echo $vcategory->ProductCategory_Name; ?></option>
-				<?php }?>
-				</select>
-				
-				<?php 
+    <option value="<?php echo $vcategory->ProductCategory_SlNo; ?>"><?php echo $vcategory->ProductCategory_Name; ?>
+    </option>
+    <?php }?>
+</select>
+
+<?php 
 				}else{
 					$category = $this->Billing_model->select_category_by_brand($id);
 					//echo "<pre>";print_r($category );exit;
 					?>
-						<select name="pCategory" id="pCategory" class="chosen-select form-control"" required>
-						<option value="no">Select Category</option>
-					<?php
+<select name="pCategory" id="pCategory" class="chosen-select form-control"" required>
+						<option value=" no">Select Category</option>
+    <?php
 					foreach($category as $vcategory)
 					{
 					?>
-						<option value="<?php echo $vcategory->ProductCategory_SlNo; ?>"><?php echo $vcategory->ProductCategory_Name; ?></option>
-					<?php
+    <option value="<?php echo $vcategory->ProductCategory_SlNo; ?>"><?php echo $vcategory->ProductCategory_Name; ?>
+    </option>
+    <?php
 					}?>
-					</select>
-					<?php
+</select>
+<?php
 				}
 			}
 		
 	  public function select_category_by_branch($id){
 			$category = $this->Billing_model->select_category_by_branch($id);
 			?>
-			<option value="All">Select All</option>
-			<?php
+<option value="All">Select All</option>
+<?php
 			foreach($category as $vcategory)
 			{
 			?>
-				<option value="<?php echo $vcategory->ProductCategory_SlNo; ?>"><?php echo $vcategory->ProductCategory_Name; ?></option>
-			<?php
+<option value="<?php echo $vcategory->ProductCategory_SlNo; ?>"><?php echo $vcategory->ProductCategory_Name; ?></option>
+<?php
 			}
 		}
 

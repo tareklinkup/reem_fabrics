@@ -216,6 +216,7 @@ class Products extends CI_Controller {
     }
 
     public function getTotalStock(){
+
         $data = json_decode($this->input->raw_input_stream);
 
         $branchId = $this->session->userdata('BRANCHid');
@@ -226,6 +227,10 @@ class Products extends CI_Controller {
 
         if(isset($data->productId) && $data->productId != null){
             $clauses .= " and p.Product_SlNo = '$data->productId'";
+        }
+
+        if(isset($data->branchId) && $data->branchId != null){
+            $branchId = $data->branchId ;
         }
 
         if(isset($data->brandId) && $data->brandId != null){
@@ -563,79 +568,82 @@ class Products extends CI_Controller {
 		$data['allproduct'] =  $allproduct = $this->Billing_model->select_Product_without_limit();
 		
 		?>
-			<br/>
-        <div class="table-responsive">
-		<table id="dynamic-table" class="table table-striped table-bordered table-hover">
-			<thead>
-				<tr>
-					<th class="center">
-						<label class="pos-rel">
-							<input type="checkbox" class="ace" />
-							<span class="lbl"></span>
-						</label>
-					</th>
-					<th>Product ID</th>
-					<th>Categoty Name</th>
-					<th>Product Name</th>
-					<th class="hidden-480">Brand</th>
+<br />
+<div class="table-responsive">
+    <table id="dynamic-table" class="table table-striped table-bordered table-hover">
+        <thead>
+            <tr>
+                <th class="center">
+                    <label class="pos-rel">
+                        <input type="checkbox" class="ace" />
+                        <span class="lbl"></span>
+                    </label>
+                </th>
+                <th>Product ID</th>
+                <th>Categoty Name</th>
+                <th>Product Name</th>
+                <th class="hidden-480">Brand</th>
 
-					<th>Color</th>
-					<!--<th class="hidden-480">Purchase Rate</th>
+                <th>Color</th>
+                <!--<th class="hidden-480">Purchase Rate</th>
 					<th class="hidden-480">Sell Rate</th>--->
 
-					<th>Action</th>
-				</tr>
-			</thead>
+                <th>Action</th>
+            </tr>
+        </thead>
 
-			<tbody>
-                <?php 
+        <tbody>
+            <?php 
 				foreach($allproduct as $vallproduct)
 				{
 				?>
-                    <tr>
-								<td class="center">
-									<label class="pos-rel">
-										<input type="checkbox" class="ace" />
-										<span class="lbl"></span>
-									</label>
-								</td>
+            <tr>
+                <td class="center">
+                    <label class="pos-rel">
+                        <input type="checkbox" class="ace" />
+                        <span class="lbl"></span>
+                    </label>
+                </td>
 
-								<td>
-									<a href="#"><?php echo $vallproduct->Product_Code; ?></a>
-								</td>
-								<td><?php echo $vallproduct->ProductCategory_Name; ?></td>
-								<td class="hidden-480"><?php echo $vallproduct->Product_Name; ?></td>
-								<td><?php echo $vallproduct->brand_name; ?></td>
+                <td>
+                    <a href="#"><?php echo $vallproduct->Product_Code; ?></a>
+                </td>
+                <td><?php echo $vallproduct->ProductCategory_Name; ?></td>
+                <td class="hidden-480"><?php echo $vallproduct->Product_Name; ?></td>
+                <td><?php echo $vallproduct->brand_name; ?></td>
 
-								<td class="hidden-480">
-									<span class="label label-sm label-info arrowed arrowed-righ">
-									<?php echo $vallproduct->color_name; ?>
-									</span>
-								</td>
-								<!--<td class="hidden-480"><?php echo $vallproduct->Product_Purchase_Rate; ?></td>
+                <td class="hidden-480">
+                    <span class="label label-sm label-info arrowed arrowed-righ">
+                        <?php echo $vallproduct->color_name; ?>
+                    </span>
+                </td>
+                <!--<td class="hidden-480"><?php echo $vallproduct->Product_Purchase_Rate; ?></td>
 								<td class="hidden-480"><?php echo $vallproduct->Product_SellingPrice; ?></td>-->
 
-								<td>
-									<div class="hidden-sm hidden-xs action-buttons">
-										<span class="blue" onclick="Edit_product(<?php echo $vallproduct->Product_SlNo; ?>)" style="cursor:pointer;">
-											<i class="ace-icon fa fa-pencil bigger-130"></i>
-										</span>
+                <td>
+                    <div class="hidden-sm hidden-xs action-buttons">
+                        <span class="blue" onclick="Edit_product(<?php echo $vallproduct->Product_SlNo; ?>)"
+                            style="cursor:pointer;">
+                            <i class="ace-icon fa fa-pencil bigger-130"></i>
+                        </span>
 
-										<a class="green" href="" onclick="deleted(<?php echo $vallproduct->Product_SlNo; ?>)">
-											<i class="ace-icon fa fa-trash bigger-130 text-danger"></i>
-										</a>
+                        <a class="green" href="" onclick="deleted(<?php echo $vallproduct->Product_SlNo; ?>)">
+                            <i class="ace-icon fa fa-trash bigger-130 text-danger"></i>
+                        </a>
 
-										<a class="black" href="<?php echo base_url(); ?>Administrator/Products/barcodeGenerate/<?php echo $vallproduct->Product_SlNo; ?>" target="_blank">
-											<i class="ace-icon fa fa-barcode bigger-130"></i>
-										</a>
-									</div>
-								</td>
-							</tr>
-                <?php } ?> 
-                </tbody>    
-            </table> 
-			</div>
-		<?php
+                        <a class="black"
+                            href="<?php echo base_url(); ?>Administrator/Products/barcodeGenerate/<?php echo $vallproduct->Product_SlNo; ?>"
+                            target="_blank">
+                            <i class="ace-icon fa fa-barcode bigger-130"></i>
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            <?php } ?>
+        </tbody>
+    </table>
+</div>
+<?php
 		//echo "<pre>";print_r($data['allproduct']);exit;
 		//$this->load->view('Administrator/products/all_product', $data, TRUE);
         //$this->load->view('Administrator/index', $data);

@@ -131,6 +131,13 @@ class Invest extends CI_Controller {
     public function getInvestmentTransactions(){
         $data = json_decode($this->input->raw_input_stream);
 
+        if(isset($data->branchId) && $data->branchId != '')
+        {
+                $branchId = $data->branchId;
+            }else {
+                $branchId = $this->session->userdata('BRANCHid');
+            }
+
         $clauses = "";
         if(isset($data->accountId) && $data->accountId != null){
             $clauses .= " and lt.account_id = '$data->accountId'";
@@ -159,7 +166,7 @@ class Invest extends CI_Controller {
             and lt.branch_id = ?
             $clauses
             order by lt.transaction_id desc
-        ", $this->session->userdata('BRANCHid'))->result();
+        ", $branchId)->result();
 
         echo json_encode($transactions);
     }

@@ -67,20 +67,121 @@ class Customer extends CI_Controller
         $data = json_decode($this->input->raw_input_stream);
         
         $clauses = "";
+
         if(isset($data->customerId) && $data->customerId != null){
             $clauses .= " and c.Customer_SlNo = '$data->customerId'";
         }
-        if(isset($data->districtId) && $data->districtId != null){
-            $clauses .= " and c.area_ID = '$data->districtId'";
+
+        // if(isset($data->districtId) && $data->districtId != null){
+        //     $clauses .= " and c.area_ID = '$data->districtId'";
+        // }
+
+         if(isset($data->invoice) && $data->invoice != null){
+            $clauses .= " and sm.SaleMaster_InvoiceNo = '$data->invoice'";
         }
+
 
         $dueResult = $this->mt->customerDue($clauses);
 
         echo json_encode($dueResult);
     }
 
-    public function getCustomerPayments(){
+    public function getInvoice(){
         $data = json_decode($this->input->raw_input_stream);
+        $clauses = "";
+        if (isset($data->customerId) && $data->customerId != "") {
+            $clauses .= "AND sm.SalseCustomer_IDNo = '$data->customerId'";
+        }
+        if (isset($data->employeeId) && $data->employeeId != "") {
+            $clauses .= "AND sm.employee_id = '$data->employeeId'";
+        }
+
+        if (isset($data->invoice) && $data->invoice != "") {
+            $clauses .= "AND sm.SaleMaster_InvoiceNo = '$data->invoice'";
+        }
+        
+        $query = $this->db->query("SELECT
+                            sm.SaleMaster_SlNo,
+                            sm.SaleMaster_InvoiceNo,
+                            sm.SaleMaster_SaleDate,
+                            sm.SaleMaster_TotalSaleAmount,
+                            sm.SaleMaster_PaidAmount,
+                            sm.SaleMaster_DueAmount,
+                            sm.SalseCustomer_IDNo,
+                            c.Customer_SlNo,
+                            c.Customer_Code,
+                            c.Customer_Name, 
+                            c.Customer_Mobile,
+                            c.owner_name,
+                            c.Customer_Address,
+                            (SELECT IFNULL(SUM(cp.CPayment_amount), 0)
+                            FROM tbl_customer_payment cp 
+                            WHERE cp.CPayment_status = 'a'
+                            AND cp.CPayment_TransactionType = 'CR' 
+                            AND cp.SaleMaster_InvoiceNo = sm.SaleMaster_InvoiceNo) AS customerPaymentAmount,
+                            (SELECT sm.SaleMaster_DueAmount - customerPaymentAmount) AS invoiceDue
+                        FROM tbl_salesmaster sm
+                        LEFT JOIN tbl_customer c ON c.Customer_SlNo = sm.SalseCustomer_IDNo
+                        WHERE sm.Status='a'
+                        AND sm.SaleMaster_DueAmount > 0
+                        AND sm.SaleMaster_branchid='$this->cbrunch'
+                        $clauses")->result();
+                        
+        echo json_encode($query);
+    }
+
+
+    public function getDueByInvoice(){
+        $data = json_decode($this->input->raw_input_stream);
+        $clauses = "";
+        if (isset($data->customerId) && $data->customerId != "") {
+            $clauses .= "AND sm.SalseCustomer_IDNo = '$data->customerId'";
+        }
+        if (isset($data->employeeId) && $data->employeeId != "") {
+            $clauses .= "AND sm.employee_id = '$data->employeeId'";
+        }
+
+        if (isset($data->invoice) && $data->invoice != "") {
+            $clauses .= "AND sm.SaleMaster_InvoiceNo = '$data->invoice'";
+        }
+        $query = $this->db->query("SELECT
+                            sm.SaleMaster_SlNo,
+                            sm.SaleMaster_InvoiceNo,
+                            sm.SaleMaster_SaleDate,
+                            sm.SaleMaster_TotalSaleAmount,
+                            sm.SaleMaster_PaidAmount,
+                            sm.SaleMaster_DueAmount,
+                            sm.SalseCustomer_IDNo,
+                            c.Customer_SlNo,
+                            c.Customer_Code,
+                            c.Customer_Name, 
+                            (SELECT IFNULL(SUM(cp.CPayment_amount), 0)
+                            FROM tbl_customer_payment cp 
+                            WHERE cp.CPayment_status = 'a'
+                            AND cp.CPayment_TransactionType = 'CR' 
+                            AND cp.SaleMaster_InvoiceNo = sm.SaleMaster_InvoiceNo) AS customerPaymentAmount,
+                            (SELECT sm.SaleMaster_DueAmount - customerPaymentAmount) AS invoiceDue
+                        FROM tbl_salesmaster sm
+                        LEFT JOIN tbl_customer c ON c.Customer_SlNo = sm.SalseCustomer_IDNo
+                        WHERE sm.Status='a'
+                        AND sm.SaleMaster_DueAmount > 0
+                        AND sm.SaleMaster_branchid='$this->cbrunch'
+                        $clauses")->result();
+                        
+        echo json_encode($query);
+    }
+
+    public function getCustomerPayments(){
+        
+        $data = json_decode($this->input->raw_input_stream);
+
+
+        if(isset($data->branchId) && $data->branchId != '')
+            {
+                $branchId = $data->branchId;
+            }else {
+                $branchId = $this->session->userdata('BRANCHid');
+            }
 
         $clauses = "";
         if(isset($data->paymentType) && $data->paymentType != '' && $data->paymentType == 'received'){
@@ -120,9 +221,9 @@ class Customer extends CI_Controller
             join tbl_customer c on c.Customer_SlNo = cp.CPayment_customerID
             left join tbl_bank_accounts ba on ba.account_id = cp.account_id
             where cp.CPayment_status = 'a'
-            and cp.CPayment_brunchid = ? $clauses
+            and cp.CPayment_brunchid = '$branchId' $clauses
             order by cp.CPayment_id desc
-        ", $this->session->userdata('BRANCHid'))->result();
+        ")->result();
 
         echo json_encode($payments);
     }

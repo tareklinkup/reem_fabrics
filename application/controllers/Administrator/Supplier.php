@@ -414,6 +414,52 @@ class Supplier extends CI_Controller {
         echo json_encode($supplierDues);
     }
 
+    public function getSupplierInvoice(){
+
+        $data = json_decode($this->input->raw_input_stream);
+        
+        $clauses = "";
+
+        if (isset($data->supplierId) && $data->supplierId != "") {
+            $clauses .= "AND pm.Supplier_SlNo = '$data->supplierId'";
+        }
+        
+        if (isset($data->invoice) && $data->invoice != "") {
+            $clauses .= "AND pm.PurchaseMaster_InvoiceNo = '$data->invoice'";
+        }
+        
+        $query = $this->db->query("SELECT
+                            pm.PurchaseMaster_SlNo,
+                            pm.PurchaseMaster_InvoiceNo,
+                            pm.PurchaseMaster_OrderDate,
+                            pm.PurchaseMaster_TotalAmount,
+                            pm.PurchaseMaster_PaidAmount,
+                            pm.PurchaseMaster_DueAmount,
+                            pm.Supplier_SlNo,
+                            s.Supplier_SlNo,
+                            s.Supplier_Code,
+                            s.Supplier_Name, 
+                            s.Supplier_Mobile,
+                            s.Supplier_Address,
+                            (SELECT IFNULL(SUM(sp.SPayment_amount), 0)
+                            FROM tbl_supplier_payment sp 
+                            WHERE sp.SPayment_status = 'a'
+                            AND sp.SPayment_TransactionType = 'CP' 
+                            AND sp.PurchaseMaster_InvoiceNo = pm.PurchaseMaster_InvoiceNo) AS SupplierPaymentAmount,
+                            (SELECT pm.PurchaseMaster_DueAmount - SupplierPaymentAmount) AS invoiceDue
+                        FROM tbl_purchasemaster pm
+                        LEFT JOIN tbl_supplier s ON s.Supplier_SlNo = pm.Supplier_SlNo
+                        WHERE pm.Status='a'
+                        AND pm.PurchaseMaster_DueAmount > 0
+                        AND pm.PurchaseMaster_BranchID =' $this->brunch'
+                        $clauses")->result();
+                        
+             echo json_encode($query);
+    }
+
+
+    
+
     public function getSupplierLedger(){
         $data = json_decode($this->input->raw_input_stream);
         $previousDueQuery = $this->db->query("select ifnull(previous_due, 0.00) as previous_due from tbl_supplier where Supplier_SlNo = '$data->supplierId'")->row();
@@ -522,7 +568,15 @@ class Supplier extends CI_Controller {
     }
 
     public function getSupplierPayments(){
+
         $data = json_decode($this->input->raw_input_stream);
+
+        if(isset($data->branchId) && $data->branchId != '')
+            {
+                $branchId = $data->branchId;
+            }else {
+                $branchId = $this->session->userdata('BRANCHid');
+            }
 
         $paymentTypeClause = "";
         if(isset($data->paymentType) && $data->paymentType != '' && $data->paymentType == 'received'){
@@ -560,7 +614,7 @@ class Supplier extends CI_Controller {
             where sp.SPayment_status = 'a'
             and sp.SPayment_brunchid = ? $paymentTypeClause $dateClause
             order by sp.SPayment_id desc
-        ", $this->session->userdata('BRANCHid'))->result();
+        ", $branchId)->result();
 
         echo json_encode($payments);
     }

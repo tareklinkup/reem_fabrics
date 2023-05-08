@@ -25,7 +25,6 @@ $route['updateBrand'] = 'Administrator/Page/Update_brand';
 $route['branddelete'] = 'Administrator/Page/branddelete';
 
 
-
 // Expense Head=============
 $route['ExpenseHead'] 				= 'Administrator/BillController/Eindex';
 $route['expenseHeadFancyBox'] 		= 'Administrator/BillController/expenseHeadFancyBox';
@@ -123,6 +122,8 @@ $route['customerlist'] = 'Administrator/Customer/customerlist';
 $route['delete_customer'] = 'Administrator/Customer/deleteCustomer';
 $route['get_customers'] = 'Administrator/Customer/getCustomers';
 $route['get_customer_due'] = 'Administrator/Customer/getCustomerDue';
+$route['get_customer_due_invoice'] = 'Administrator/Customer/getInvoice'; 
+$route['get_customer_due_by_invoice'] = 'Administrator/Customer/getDueByInvoice'; 
 $route['get_customer_ledger'] = 'Administrator/Customer/getCustomerLedger';
 $route['get_customer_payments'] = 'Administrator/Customer/getCustomerPayments';
 $route['add_customer_payment'] = 'Administrator/Customer/addCustomerPayment';
@@ -167,7 +168,7 @@ $route['selectSupplierForReport'] = 'Administrator/Purchase/select_supplier';
 $route['selectProductReport'] = 'Administrator/Purchase/select_product';
 $route['searchPurchaseRecord'] = 'Administrator/Purchase/search_purchase_record';
 $route['purchaseRecordPrint'] = 'Administrator/Reports/search_purchase_record';
-$route['supplierDue'] = 'Administrator/Supplier/supplier_due';
+$route['supplierDue'] = 'Administrator/Supplier/supplier_due'; 
 $route['supplierPayment'] = 'Administrator/Supplier/supplierPaymentPage';
 $route['supplierDuePrint'] = 'Administrator/Reports/search_supplier_due';
 $route['searchSupplierDue'] = 'Administrator/Supplier/search_supplier_due';
@@ -175,6 +176,7 @@ $route['supplierPaymentReport'] = 'Administrator/Supplier/supplier_payment_repor
 $route['searchSupplierPayments'] = 'Administrator/Supplier/search_supplier_payments';
 $route['get_suppliers'] = 'Administrator/Supplier/getSuppliers';
 $route['get_supplier_due'] = 'Administrator/Supplier/getSupplierDue';
+$route['get_supplier_due_invoice'] = 'Administrator/Supplier/getSupplierInvoice'; 
 $route['get_supplier_ledger'] = 'Administrator/Supplier/getSupplierLedger';
 $route['get_supplier_payments'] = 'Administrator/Supplier/getSupplierPayments';
 $route['add_supplier_payment'] = 'Administrator/Supplier/addSupplierPayment';
@@ -287,6 +289,7 @@ $route['salesreturnlist'] = 'Administrator/Reports/salesreturnlist';
 $route['profitLoss'] = 'Administrator/Sales/profitLoss';
 $route['profitLossSearch'] = 'Administrator/Sales/profitLossSearch';
 $route['get_profit_loss'] = 'Administrator/Sales/getProfitLoss';
+$route['get_profit_loss_by_product'] = 'Administrator/Sales/getProfitLossByProduct'; 
 $route['profitLossPrint'] = 'Administrator/Reports/profitLossPrint';
  
 $route['customerDue'] = 'Administrator/Customer/customer_due'; 
@@ -476,6 +479,34 @@ $route['get_transfer_details'] = 'Administrator/Transfer/getTransferDetails';
 $route['received_list'] = 'Administrator/Transfer/receivedList';
 $route['get_receives'] = 'Administrator/Transfer/getReceives';
 $route['transfer_invoice/(:any)'] = 'Administrator/Transfer/transferInvoice/$1';
+
+
+// Requisition
+$route['product_requisition'] = 'Administrator/Requisition/productRequisition';
+$route['product_requisition/(:any)'] = 'Administrator/Requisition/requisitionEdit/$1';
+$route['add_product_requisition'] = 'Administrator/Requisition/addProductRequisition';
+$route['update_product_requisition'] = 'Administrator/Requisition/updateProductRequisition';
+$route['delete_requisition'] = 'Administrator/Requisition/deleteRequisition';
+$route['requisition_list'] = 'Administrator/Requisition/requisitionList';
+$route['get_requisitions'] = 'Administrator/Requisition/getRequisitions';
+$route['get_requisition_details'] = 'Administrator/Requisition/getRequisitionDetails';
+$route['requisition_received_list'] = 'Administrator/Requisition/requisitionReceivedList';
+$route['get_requisition_receives'] = 'Administrator/Requisition/getRequisitionReceives';
+$route['requisition_invoice/(:any)'] = 'Administrator/Requisition/requisitionInvoice/$1';
+
+
+// Cash Transfer 
+
+$route['cash_transfer']          = 'Administrator/Transfer/cashTransfer';
+$route['add_cash_transfer']      = 'Administrator/Transfer/addCashTransfer';
+$route['update_cash_transfer']   = 'Administrator/Transfer/updateCashTransfer';
+$route['delete_cash_transfer']   = 'Administrator/Transfer/deleteCashTransfer';
+$route['get_cash_transfers']     = 'Administrator/Transfer/getCashTransfer'; 
+$route['get_cash_transfer_received'] = 'Administrator/Transfer/getCashTransferReceived';  
+$route['cash_transfer_record']     = 'Administrator/Transfer/cashTransferRecord';
+$route['cash_transfer_received'] = 'Administrator/Transfer/cashTransferReceived';
+$route['get_cash_receives']      = 'Administrator/Transfer/getCashReceives';
+
 
 // Banks
 $route['bank_accounts'] = 'Administrator/Account/bankAccounts';

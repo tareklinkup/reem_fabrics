@@ -802,6 +802,13 @@ class Employee extends CI_Controller
     {
         $data = json_decode($this->input->raw_input_stream);
 
+        if(isset($data->branchId) && $data->branchId != '')
+            {
+                $branchId = $data->branchId;
+            }else {
+                $branchId = $this->session->userdata("BRANCHid");
+            }
+
         $clauses = "";
 
         if(isset($data->dateFrom) && $data->dateFrom != '' && isset($data->dateTo) && $data->dateTo != ''){
@@ -829,7 +836,7 @@ class Employee extends CI_Controller
             and ep.branch_id = ?
             $clauses
             order by ep.id desc
-        ", $this->session->userdata("BRANCHid"))->result();
+        ", $branchId)->result();
 
         if(isset($data->details)){
             foreach($payments as $payment){

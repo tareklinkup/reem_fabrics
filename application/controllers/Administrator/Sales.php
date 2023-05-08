@@ -304,19 +304,30 @@ class Sales extends CI_Controller {
     
     public function getSales(){
         $data = json_decode($this->input->raw_input_stream);
-        $branchId = $this->session->userdata("BRANCHid");
+
+        if(isset($data->branchId) && $data->branchId != ''){
+            $branch_id = $data->branchId;
+        }else {
+            $branch_id = $this->session->userdata("BRANCHid");
+        }
 
         $clauses = "";
         if(isset($data->dateFrom) && $data->dateFrom != '' && isset($data->dateTo) && $data->dateTo != ''){
             $clauses .= " and sm.SaleMaster_SaleDate between '$data->dateFrom' and '$data->dateTo'";
         }
 
+
         if(isset($data->userFullName) && $data->userFullName != ''){
             $clauses .= " and sm.AddBy = '$data->userFullName'";
         }
 
+
         if(isset($data->customerId) && $data->customerId != ''){
             $clauses .= " and sm.SalseCustomer_IDNo = '$data->customerId'";
+        }
+
+        if(isset($data->branchId) && $data->branchId != ''){
+            $clauses .= " and sm.SaleMaster_branchid = '$data->branchId'";
         }
 
         if(isset($data->employeeId) && $data->employeeId != ''){
@@ -360,7 +371,7 @@ class Sales extends CI_Controller {
             left join tbl_customer c on c.Customer_SlNo = sm.SalseCustomer_IDNo
             left join tbl_employee e on e.Employee_SlNo = sm.employee_id
             left join tbl_brunch br on br.brunch_id = sm.SaleMaster_branchid
-            where sm.SaleMaster_branchid = '$branchId'
+            where sm.SaleMaster_branchid = '$branch_id'
             and sm.Status = 'a'
             $clauses
             order by sm.SaleMaster_SlNo desc
@@ -1268,40 +1279,42 @@ class Sales extends CI_Controller {
     
      function select_customerName()  { 
        ?>
-       <div class="form-group">
-        <label class="col-sm-2 control-label no-padding-right" for="customerID"> Select Customer </label>
-        <div class="col-sm-3">
-            <select name="" id="customerID" data-placeholder="Choose a Customer..." class="chosen-select" >
-                <option value="All">All</option>
-                <?php 
+<div class="form-group">
+    <label class="col-sm-2 control-label no-padding-right" for="customerID"> Select Customer </label>
+    <div class="col-sm-3">
+        <select name="" id="customerID" data-placeholder="Choose a Customer..." class="chosen-select">
+            <option value="All">All</option>
+            <?php 
                 $sql = $this->db->query("SELECT * FROM tbl_customer where Customer_brunchid = '".$this->sbrunch."' AND Customer_Type = 'Local' order by Customer_Name asc");
                 $row = $sql->result();
                 foreach($row as $row){ ?>
 
-                <option value="<?php echo $row->Customer_SlNo; ?>"><?php echo $row->Customer_Name; ?> (<?php echo $row->Customer_Code; ?>)</option>
-                <?php } ?>
-            </select>
-        </div>
+            <option value="<?php echo $row->Customer_SlNo; ?>"><?php echo $row->Customer_Name; ?>
+                (<?php echo $row->Customer_Code; ?>)</option>
+            <?php } ?>
+        </select>
     </div>
-       <?php
+</div>
+<?php
     }
     function select_InvCustomerName()  {
         ?>
-        <div class="form-group">
-            <div class="col-sm-3">
-                <select id="Salestype" class="chosen-select" name="Salestype">
-                    <option value="All">All</option>
-                    <?php
+<div class="form-group">
+    <div class="col-sm-3">
+        <select id="Salestype" class="chosen-select" name="Salestype">
+            <option value="All">All</option>
+            <?php
                     $sql = $this->db->query("SELECT * FROM tbl_customer where Customer_brunchid = '".$this->sbrunch."' AND Customer_Type = 'Local' order by Customer_Name asc");
                     $row = $sql->result();
                     foreach($row as $row){ ?>
 
-                        <option value="<?php echo $row->Customer_SlNo; ?>"><?php echo $row->Customer_Name; ?> (<?php echo $row->Customer_Code; ?>)</option>
-                    <?php } ?>
-                </select>
-            </div>
-        </div>
-        <?php
+            <option value="<?php echo $row->Customer_SlNo; ?>"><?php echo $row->Customer_Name; ?>
+                (<?php echo $row->Customer_Code; ?>)</option>
+            <?php } ?>
+        </select>
+    </div>
+</div>
+<?php
     }
     function sales_customerName()  {
         $id = $this->input->post('customerID');
@@ -1812,6 +1825,7 @@ class Sales extends CI_Controller {
     }
 
     public function getProfitLoss(){
+        
         $data = json_decode($this->input->raw_input_stream);
 
         $customerClause = "";
@@ -1853,6 +1867,48 @@ class Sales extends CI_Controller {
         }
 
         echo json_encode($sales);
+    }
+
+
+    public function getProfitLossByProduct(){
+
+        $data = json_decode($this->input->raw_input_stream);
+
+        $clause = "";
+        if($data->product != null && $data->product != ''){
+            $clause .= " and sd.Product_IDNo = '$data->product'";
+        }
+
+        if($data->category != null && $data->category != ''){
+            $clause .= " and p.ProductCategory_ID = '$data->category'";
+        }
+
+        $dateClause = "";
+        if(($data->dateFrom != null && $data->dateFrom != '') && ($data->dateTo != null && $data->dateTo != '')){
+            $dateClause = " and sm.SaleMaster_SaleDate between '$data->dateFrom' and '$data->dateTo'";
+        }
+
+        $sales = $this->db->query("
+                select
+                    sd.*,
+                    p.Product_Code,
+                    p.Product_Name,
+                    p.ProductCategory_ID,
+                    sm.SaleMaster_SaleDate,
+                    sum(sd.SaleDetails_TotalQuantity) as total_sale_qty,
+                    sum(sd.Purchase_Rate * sd.SaleDetails_TotalQuantity) as total_purcase_amount,
+                    sum(sd.SaleDetails_TotalAmount) as total_sale_amount
+                from tbl_saledetails sd 
+                join tbl_product p on p.Product_SlNo = sd.Product_IDNo
+                left join tbl_salesmaster sm on sm.SaleMaster_SlNo = sd.SaleMaster_IDNo
+                where sd.Status = 'a'
+                and sd.SaleDetails_BranchId = ?
+                $clause $dateClause
+                GROUP BY sd.Product_IDNo
+            ", $this->sbrunch)->result();
+
+            echo json_encode($sales);
+        
     }
 
     public function chalan($saleId){
