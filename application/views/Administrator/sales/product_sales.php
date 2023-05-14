@@ -227,11 +227,10 @@
                                 <input type="text" id="stockUnit" v-model="selectedProduct.Unit_Name" readonly
                                     style="border:none;font-size:12px;width:100%;text-align: center;"><br><br>
                             </div>
-                            <input type="password" ref="productPurchaseRate"
-                                v-model="selectedProduct.Product_Purchase_Rate"
-                                v-on:mousedown="toggleProductPurchaseRate" v-on:mouseup="toggleProductPurchaseRate"
-                                readonly title="Purchase rate (click & hold)"
-                                style="font-size:12px;width:100%;text-align: center;">
+                            <!-- <input type="password" ref="productPurchaseRate"
+                                v-model="selectedProduct.Product_Purchase_Rate" readonly
+                                title="Purchase rate (click & hold)"
+                                style="font-size:12px;width:100%;text-align: center;"> -->
 
                         </div>
                     </div>
@@ -606,7 +605,7 @@ new Vue({
                     .Customer_SlNo)) {
                 let changeConfirm = confirm(
                     'Changing customer will set previous due to current due amount. Do you really want to change customer?'
-                    );
+                );
                 if (changeConfirm == false) {
                     return;
                 }
@@ -828,7 +827,7 @@ new Vue({
                 this.sales_due_on_update = sales.SaleMaster_DueAmount;
 
                 this.vatPercent = parseFloat(this.sales.vat) * 100 / parseFloat(this.sales
-                .subTotal);
+                    .subTotal);
                 this.discountPercent = parseFloat(this.sales.discount) * 100 / parseFloat(this.sales
                     .subTotal);
 

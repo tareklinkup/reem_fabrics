@@ -962,6 +962,7 @@ class Account extends CI_Controller {
             end as status_text
             from tbl_bank_accounts 
             where branch_id = ?
+            and status != 0
         ", $this->session->userdata('BRANCHid'))->result();
         echo json_encode($accounts);
     }
